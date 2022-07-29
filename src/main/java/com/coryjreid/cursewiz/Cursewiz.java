@@ -1,5 +1,8 @@
 package com.coryjreid.cursewiz;
 
+import java.io.IOException;
+
+import com.coryjreid.cursewiz.util.PackwizUtil;
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
@@ -8,7 +11,7 @@ import com.martiansoftware.jsap.JSAPResult;
 public class Cursewiz {
     private static final JSAP sJsap = new JSAP();
 
-    public static void main(final String[] args) throws JSAPException {
+    public static void main(final String[] args) throws JSAPException, IOException {
         setupArgumentParser();
 
         final JSAPResult parsedArgs = sJsap.parse(args);
@@ -20,6 +23,8 @@ public class Cursewiz {
             System.err.println();
             System.exit(1);
         }
+
+        System.out.println(PackwizUtil.getAndExtractPackwizExecutable().getAbsolutePath());
     }
 
     private static void setupArgumentParser() throws JSAPException {
