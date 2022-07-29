@@ -1,5 +1,9 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.configurationcache.extensions.capitalized
+
 plugins {
     id("java")
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "com.coryjreid"
@@ -31,4 +35,18 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks.withType<ShadowJar> {
+    manifest {
+        attributes(
+            mapOf(
+                "Main-Class" to project.group.toString() + "." + project.name + "." + project.name.capitalized()
+            )
+        )
+    }
+
+    archiveClassifier.set("")
+    archiveBaseName.set(project.name.capitalized())
+    archiveVersion.set(archiveVersion.get().replace("-SNAPSHOT", ""))
 }
