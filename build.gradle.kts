@@ -17,8 +17,16 @@ dependencies {
     implementation("com.martiansoftware:jsap:2.1")
     implementation("com.moandjiezana.toml:toml4j:0.7.2")
     implementation("de.erdbeerbaerlp:cfcore:1.0.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+    implementation("ch.qos.logback:logback-classic:1.3.0-alpha16")
+    implementation("org.slf4j:slf4j-api:2.0.0-alpha7")
+    implementation("com.google.guava:guava:31.1-jre")
+    constraints {
+        // Guava uses Jackson but we want to control the version
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
+    }
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 }
 
 tasks.getByName<Test>("test") {
