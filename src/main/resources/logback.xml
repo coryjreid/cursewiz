@@ -1,11 +1,13 @@
 <configuration>
+  <variable name="ROOT_LOG_LEVEL" value="${ROOT_LOG_LEVEL:-INFO}"/>
+
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
 
-  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>cursewiz.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
       <fileNamePattern>cursewiz.%i.log.zip</fileNamePattern>
@@ -20,10 +22,8 @@
     </encoder>
   </appender>
 
-  <root level="ALL">
+  <root level="${ROOT_LOG_LEVEL}">
     <appender-ref ref="STDOUT"/>
-    <!--
-    <appender-ref ref="FILE" />
-    -->
+    <appender-ref ref="FILE"/>
   </root>
 </configuration>
