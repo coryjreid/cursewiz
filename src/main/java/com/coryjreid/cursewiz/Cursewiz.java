@@ -1,6 +1,7 @@
 package com.coryjreid.cursewiz;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 
 import com.coryjreid.cursewiz.util.PackwizUtil;
 import com.martiansoftware.jsap.FlaggedOption;
@@ -8,7 +9,11 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Cursewiz {
+    private static final Logger sLogger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final JSAP sJsap = new JSAP();
 
     public static void main(final String[] args) throws JSAPException, IOException {
@@ -24,7 +29,7 @@ public class Cursewiz {
             System.exit(1);
         }
 
-        System.out.println(PackwizUtil.getAndExtractPackwizExecutable().getAbsolutePath());
+        sLogger.debug(PackwizUtil.getAndExtractPackwizExecutable().getAbsolutePath());
     }
 
     private static void setupArgumentParser() throws JSAPException {
