@@ -1,19 +1,16 @@
 package com.coryjreid.cursewiz;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 
-import com.coryjreid.cursewiz.util.PackwizUtil;
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Cursewiz {
-    private static final Logger sLogger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    static final String CURSEFORGE_INSTANCE_PATH_FLAG = "curseforgeInstancePath";
+    static final String MODPACK_PROJECT_PATH_FLAG = "modpackProjectPath";
+
     private static final JSAP sJsap = new JSAP();
 
     public static void main(final String[] args) throws JSAPException, IOException {
@@ -29,18 +26,20 @@ public class Cursewiz {
             System.exit(1);
         }
 
-        sLogger.debug(PackwizUtil.getAndExtractPackwizExecutable().getAbsolutePath());
+        Migrator.doMigration(
+            parsedArgs.getString(CURSEFORGE_INSTANCE_PATH_FLAG),
+            parsedArgs.getString(MODPACK_PROJECT_PATH_FLAG));
     }
 
     private static void setupArgumentParser() throws JSAPException {
-        sJsap.registerParameter(new FlaggedOption("curseforgeInstancePath")
+        sJsap.registerParameter(new FlaggedOption(CURSEFORGE_INSTANCE_PATH_FLAG)
             .setStringParser(JSAP.STRING_PARSER)
             .setRequired(true)
             .setShortFlag('c')
             .setLongFlag(JSAP.NO_LONGFLAG)
             .setHelp("Path to the CurseForge App-managed Minecraft instance directory"));
 
-        sJsap.registerParameter(new FlaggedOption("modpackProjectPath")
+        sJsap.registerParameter(new FlaggedOption(MODPACK_PROJECT_PATH_FLAG)
             .setStringParser(JSAP.STRING_PARSER)
             .setRequired(true)
             .setShortFlag('m')

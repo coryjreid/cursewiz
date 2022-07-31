@@ -14,19 +14,19 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 @JsonDeserialize(using = InstalledAddon.Deserializer.class)
 public class InstalledAddon {
 
-    private final int mAddonId;
-    private final int mFileId;
+    private final long mAddonId;
+    private final long mFileId;
 
     public InstalledAddon(final int addonId, final int fileId) {
         mAddonId = addonId;
         mFileId = fileId;
     }
 
-    public int getAddonId() {
+    public long getAddonId() {
         return mAddonId;
     }
 
-    public int getFileId() {
+    public long getFileId() {
         return mFileId;
     }
 
