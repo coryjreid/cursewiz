@@ -89,6 +89,9 @@ public class Migrator {
                 PackwizUtil.getAndExtractPackwizExecutable().getAbsolutePath(),
                 "refresh")
             .start();
+
+        // Write VERSION file
+        Files.write(Paths.get(modpackProjectPath, "VERSION"), modpackVersion.getBytes());
     }
 
     private static void doConfigCopy(final String curseInstancePath, final String modpackProjectPath)
