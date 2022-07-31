@@ -10,6 +10,7 @@ import com.martiansoftware.jsap.JSAPResult;
 public class Cursewiz {
     static final String CURSEFORGE_INSTANCE_PATH_FLAG = "curseforgeInstancePath";
     static final String MODPACK_PROJECT_PATH_FLAG = "modpackProjectPath";
+    static final String MODPACK_PROJECT_VERSION_FLAG = "modpackVersion";
 
     private static final JSAP sJsap = new JSAP();
 
@@ -26,9 +27,16 @@ public class Cursewiz {
             System.exit(1);
         }
 
-        Migrator.doMigration(
-            parsedArgs.getString(CURSEFORGE_INSTANCE_PATH_FLAG),
-            parsedArgs.getString(MODPACK_PROJECT_PATH_FLAG));
+        if (parsedArgs.contains(MODPACK_PROJECT_VERSION_FLAG)) {
+            Migrator.doMigration(
+                parsedArgs.getString(CURSEFORGE_INSTANCE_PATH_FLAG),
+                parsedArgs.getString(MODPACK_PROJECT_PATH_FLAG),
+                parsedArgs.getString(MODPACK_PROJECT_VERSION_FLAG));
+        } else {
+            Migrator.doMigration(
+                parsedArgs.getString(CURSEFORGE_INSTANCE_PATH_FLAG),
+                parsedArgs.getString(MODPACK_PROJECT_PATH_FLAG));
+        }
     }
 
     private static void setupArgumentParser() throws JSAPException {
@@ -45,5 +53,12 @@ public class Cursewiz {
             .setShortFlag('m')
             .setLongFlag(JSAP.NO_LONGFLAG)
             .setHelp("Path to the modpack project directory"));
+
+        sJsap.registerParameter(new FlaggedOption(MODPACK_PROJECT_VERSION_FLAG)
+            .setStringParser(JSAP.STRING_PARSER)
+            .setRequired(false)
+            .setShortFlag('v')
+            .setLongFlag(JSAP.NO_LONGFLAG)
+            .setHelp("Modpack version to set for BetterCompatabilityChecker & VERSION file"));
     }
 }

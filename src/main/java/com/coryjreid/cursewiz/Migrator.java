@@ -6,7 +6,6 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,14 +16,18 @@ import java.util.stream.Stream;
 
 import com.coryjreid.cursewiz.json.InstalledAddon;
 import com.coryjreid.cursewiz.json.MinecraftInstance;
+import com.coryjreid.cursewiz.toml.BccToml;
 import com.coryjreid.cursewiz.toml.PackMod;
 import com.coryjreid.cursewiz.util.PackwizUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.moandjiezana.toml.Toml;
+import com.moandjiezana.toml.TomlWriter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class Migrator {
     private static final Logger sLogger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -38,13 +41,46 @@ public class Migrator {
         sFolders.add("scripts");
     }
 
-    public static void doMigration(final String curseInstancePath, final String modpackProjectPath) throws IOException {
+    public static void doMigration(
+        final String curseInstancePath,
+        final String modpackProjectPath) throws IOException {
+
         doPackwizChanges(curseInstancePath, modpackProjectPath);
         doConfigCopy(curseInstancePath, modpackProjectPath);
     }
 
+    public static void doMigration(
+        final String curseInstancePath,
+        final String modpackProjectPath,
+        final String modpackVersion) throws IOException {
+
+        doPackwizChanges(curseInstancePath, modpackProjectPath);
+        doConfigCopy(curseInstancePath, modpackProjectPath);
+        doVersionUpdate(modpackProjectPath, modpackVersion);
+    }
+
+    private static void doVersionUpdate(final String modpackProjectPath, final String modpackVersion)
+        throws IOException {
+
+        final TomlWriter tomlWriter = new TomlWriter();
+        final Map<String, Object> values = new HashMap<>();
+        final BccToml bccToml = new BccToml(values);
+        values.put("modpackName", "Logicraft_");
+        values.put("modpackProjectID", 323471);
+        values.put("modpackVersion", modpackVersion);
+        values.put("useMetadata", false);
+
+        tomlWriter.write(bccToml, Paths.get(modpackProjectPath, "config", "bcc-common.toml").toFile());
+    }
+
     private static void doConfigCopy(final String curseInstancePath, final String modpackProjectPath)
         throws IOException {
+
+        // Backup BCC config
+        final Path bccOriginal = Paths.get(modpackProjectPath, "config", "bcc-common.toml");
+        final File bccTemp = File.createTempFile("bcc-common", null);
+        bccTemp.deleteOnExit();
+        Files.copy(bccOriginal, bccTemp.toPath(), REPLACE_EXISTING);
 
         // Delete the files from modpack
         for (final String folder : sFolders) {
@@ -63,16 +99,22 @@ public class Migrator {
             final Path destinationDirectory = Paths.get(modpackProjectPath, folder);
             try (final Stream<Path> stream = Files.walk(sourceDirectory)) {
                 stream.forEach(sourcePath -> {
+                    if (sourcePath.toString().contains("bcc-common.toml")) {
+                        return;
+                    }
                     try {
                         Path targetPath = destinationDirectory.resolve(sourceDirectory.relativize(sourcePath));
                         sLogger.info(String.format("Copying %s to %s", sourcePath, targetPath));
-                        Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                        Files.copy(sourcePath, targetPath, REPLACE_EXISTING);
                     } catch (final IOException exception) {
                         sLogger.error("Failed to copy", exception);
                     }
                 });
             }
         }
+
+        // Restore BCC config
+        Files.copy(bccTemp.toPath(), bccOriginal, REPLACE_EXISTING);
     }
 
     private static void doPackwizChanges(final String curseInstancePath, final String modpackProjectPath)
