@@ -63,14 +63,32 @@ public class Migrator {
         throws IOException {
 
         final TomlWriter tomlWriter = new TomlWriter();
-        final Map<String, Object> values = new HashMap<>();
-        final BccToml bccToml = new BccToml(values);
-        values.put("modpackName", "Logicraft_");
-        values.put("modpackProjectID", 323471);
-        values.put("modpackVersion", modpackVersion);
-        values.put("useMetadata", false);
+
+        // Update BCC
+        final Map<String, Object> bccValues = new HashMap<>();
+        final BccToml bccToml = new BccToml(bccValues);
+        bccValues.put("modpackName", "Logicraft_");
+        bccValues.put("modpackProjectID", 323471);
+        bccValues.put("modpackVersion", modpackVersion);
+        bccValues.put("useMetadata", false);
 
         tomlWriter.write(bccToml, Paths.get(modpackProjectPath, "config", "bcc-common.toml").toFile());
+
+        // Update pack.toml
+        final Path packTomlPath = Paths.get(modpackProjectPath, "pack.toml");
+        final Map<String, Object> currentPackToml = new Toml().read(packTomlPath.toFile()).toMap();
+        currentPackToml.put("version", modpackVersion);
+
+        tomlWriter.write(currentPackToml, packTomlPath.toFile());
+
+        // Refresh pack.toml to cleanup format
+        new ProcessBuilder()
+            .inheritIO()
+            .directory(new File(modpackProjectPath))
+            .command(
+                PackwizUtil.getAndExtractPackwizExecutable().getAbsolutePath(),
+                "refresh")
+            .start();
     }
 
     private static void doConfigCopy(final String curseInstancePath, final String modpackProjectPath)
