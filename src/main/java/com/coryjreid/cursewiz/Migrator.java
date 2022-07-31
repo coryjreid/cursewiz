@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,8 +28,55 @@ import org.slf4j.LoggerFactory;
 
 public class Migrator {
     private static final Logger sLogger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Set<String> sFolders = new HashSet<>();
+
+    static {
+        sFolders.add("config");
+        sFolders.add("defaultconfigs");
+        sFolders.add("kubejs");
+        sFolders.add("resourcepacks");
+        sFolders.add("scripts");
+    }
 
     public static void doMigration(final String curseInstancePath, final String modpackProjectPath) throws IOException {
+        doPackwizChanges(curseInstancePath, modpackProjectPath);
+        doConfigCopy(curseInstancePath, modpackProjectPath);
+    }
+
+    private static void doConfigCopy(final String curseInstancePath, final String modpackProjectPath)
+        throws IOException {
+
+        // Delete the files from modpack
+        for (final String folder : sFolders) {
+            final Path pathToDelete = Paths.get(modpackProjectPath, folder);
+            sLogger.info(String.format("Deleting path %s", pathToDelete));
+            try (final Stream<Path> stream = Files.walk(pathToDelete)) {
+                stream.sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+            }
+        }
+
+        // Copy files to modpack
+        for (final String folder : sFolders) {
+            final Path sourceDirectory = Paths.get(curseInstancePath, folder);
+            final Path destinationDirectory = Paths.get(modpackProjectPath, folder);
+            try (final Stream<Path> stream = Files.walk(sourceDirectory)) {
+                stream.forEach(sourcePath -> {
+                    try {
+                        Path targetPath = destinationDirectory.resolve(sourceDirectory.relativize(sourcePath));
+                        sLogger.info(String.format("Copying %s to %s", sourcePath, targetPath));
+                        Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (final IOException exception) {
+                        sLogger.error("Failed to copy", exception);
+                    }
+                });
+            }
+        }
+    }
+
+    private static void doPackwizChanges(final String curseInstancePath, final String modpackProjectPath)
+        throws IOException {
         final File packwizFile = PackwizUtil.getAndExtractPackwizExecutable();
         final File minecraftInstanceFile = new File(curseInstancePath + File.separator + "minecraftinstance.json");
         final MinecraftInstance minecraftInstance =
