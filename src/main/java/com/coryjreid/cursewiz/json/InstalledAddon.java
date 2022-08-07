@@ -70,7 +70,8 @@ public class InstalledAddon {
 
             final JsonNode rootNode = parser.getCodec().readTree(parser);
             final int addonId = rootNode.get("addonID").asInt();
-            final int fileId = rootNode.get("installedFile").get("id").asInt();
+            final JsonNode installedFile = rootNode.get("installedFile");
+            final int fileId = installedFile.isNull() ? -1 : installedFile.get("id").asInt();
 
             return new InstalledAddon(addonId, fileId);
         }

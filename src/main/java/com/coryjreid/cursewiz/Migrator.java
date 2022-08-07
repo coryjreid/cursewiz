@@ -175,6 +175,22 @@ public class Migrator {
                         String.valueOf(instanceMod.getFileId()))
                     .start();
             } else if (packMod.getFileId() != instanceMod.getFileId()) {
+                if (instanceMod.getFileId() == -1) {
+                    // pack deletion
+                    sLogger.info(String.format(
+                        "Removing mod ID %s file ID %s",
+                        instanceMod.getAddonId(),
+                        packMod.getFileId()));
+                    new ProcessBuilder()
+                        .inheritIO()
+                        .directory(new File(modpackProjectPath))
+                        .command(
+                            packwizFile.getAbsolutePath(),
+                            "remove",
+                            packModSlugMap.get(instanceMod.getAddonId()))
+                        .start();
+                    continue;
+                }
                 // pack update
                 sLogger.info(String.format(
                     "Updating mod ID %s file ID %s",
